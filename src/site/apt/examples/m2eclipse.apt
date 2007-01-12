@@ -9,9 +9,9 @@
 M2Eclipse Build
 
   This example maven 
-  {{{http://svn.codehaus.org/mojo/trunk/mojo/mojo-sandbox/pde-maven-plugin/src/it/m2eclipse}
+  {{{http://svn.codehaus.org/mojo/trunk/mojo/pde-maven-plugin/src/it/m2eclipse}
   project}} uses a 
-  {{{http://svn.codehaus.org/mojo/trunk/mojo/mojo-sandbox/pde-maven-plugin/src/it/m2eclipse/pom.xml}
+  {{{http://svn.codehaus.org/mojo/trunk/mojo/pde-maven-plugin/src/it/m2eclipse/pom.xml}
   wrapper pom}} to fetch {{{http://svn.codehaus.org/m2eclipse/trunk}M2Eclipse source}}
   at {{{http://m2eclipse.codehaus.org}codehaus}}
   into the following PDE directory structure:
@@ -28,10 +28,10 @@ M2Eclipse Build
   After the check out completes, the wrapper pom uses  maven-antrun-plugin 
   to invoke this plugin to produce M2Eclipse feature distribution binary using:
   
-  * {{{http://svn.codehaus.org/mojo/trunk/mojo/mojo-sandbox/pde-maven-plugin/src/it/m2eclipse/src/test/resources/pom.xml}
+  * {{{http://svn.codehaus.org/mojo/trunk/mojo/pde-maven-plugin/src/it/m2eclipse/src/test/resources/pom.xml}
     Default build lifecycle}}
   
-  * {{{http://svn.codehaus.org/mojo/trunk/mojo/mojo-sandbox/pde-maven-plugin/src/it/m2eclipse/src/test/resources/custom-pom.xml}
+  * {{{http://svn.codehaus.org/mojo/trunk/mojo/pde-maven-plugin/src/it/m2eclipse/src/test/resources/custom-pom.xml}
     Custom build lifecycle}}
   
   * Direct pde:pde invocation

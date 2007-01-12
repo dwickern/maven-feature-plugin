@@ -2,9 +2,9 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <parent>
-    <artifactId>mojo-sandbox</artifactId>
     <groupId>org.codehaus.mojo</groupId>
-    <version>2</version>
+    <artifactId>mojo</artifactId>
+    <version>12</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>pde-maven-plugin</artifactId>
@@ -14,13 +14,13 @@
   <description>
     Maven plugin for building Eclipse PDE projects
   </description>
-  <url>
-    https://svn.codehaus.org/mojo/trunk/mojo/mojo-sandbox/pde-maven-plugin/
-  </url>
+  <url>http://mojo.codehaus.org/pde-maven-plugin</url>
   <prerequisites>
     <maven>2.0.4</maven>
   </prerequisites>
   <inceptionYear>2006</inceptionYear>
+  
+  
   <licenses>
     <license>
       <name>Apache License, Version 2.0</name>
@@ -28,12 +28,6 @@
       <distribution>repo</distribution>
     </license>
   </licenses>
-  <organization>
-    <name>Codehaus</name>
-    <url>
-      https://svn.codehaus.org/mojo/trunk/mojo/mojo-sandbox/pde-maven-plugin/
-    </url>
-  </organization>
   <developers>
     <developer>
       <id>dantran</id>
@@ -86,6 +80,16 @@
   </dependencies>
   <build>
     <plugins>
+    
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.4</source>
+          <target>1.4</target>
+        </configuration>
+      </plugin>
+    
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-assembly-plugin</artifactId>
@@ -163,17 +167,7 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>cobertura-maven-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>clean</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
+      <!--
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-docck-plugin</artifactId>
@@ -185,6 +179,7 @@
           </execution>
         </executions>
       </plugin>
+      -->
     </plugins>
   </build>
   <reporting>
@@ -192,6 +187,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>cobertura-maven-plugin</artifactId>
+        <version>2.0</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
