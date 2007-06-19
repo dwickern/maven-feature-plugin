@@ -58,6 +58,44 @@
       </configuration>
     </component>  
 
-                  
+    <!--
+     |          eclipse-feature build lifecycle
+     -->
+    <component>
+      <role>org.apache.maven.lifecycle.mapping.LifecycleMapping</role>
+      <role-hint>eclipse-feature</role-hint>
+      <implementation>org.apache.maven.lifecycle.mapping.DefaultLifecycleMapping</implementation>
+      <configuration>
+        <phases>
+          <initialize></initialize>
+          <generate-sources></generate-sources>
+          <process-sources></process-sources>
+          <generate-resources></generate-resources>
+          <process-resources></process-resources>          
+          <compile>org.codehaus.mojo:pde-maven-plugin:feature</compile>
+          <process-test-resources></process-test-resources>
+          <test-compile></test-compile>
+          <test></test>          
+          <package>org.apache.maven.plugins:maven-jar-plugin:jar</package>
+          <install>org.apache.maven.plugins:maven-install-plugin:install</install>
+          <deploy>org.apache.maven.plugins:maven-deploy-plugin:deploy</deploy>
+        </phases>
+      </configuration>
+    </component>  
+    
+    <component>
+      <role>org.apache.maven.artifact.handler.ArtifactHandler</role>
+      <role-hint>eclipse-feature</role-hint>
+      <implementation>org.apache.maven.artifact.handler.DefaultArtifactHandler</implementation>
+      <configuration>
+        <classifier></classifier>
+        <extension>jar</extension>
+        <type>eclipse-feature</type>
+        <packaging>jar</packaging>
+        <language>java</language>
+        <addedToClasspath>false</addedToClasspath>
+      </configuration>
+    </component>
+
   </components> 
 </component-set>
