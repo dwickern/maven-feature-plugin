@@ -31,8 +31,7 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>pde-maven-plugin</artifactId>
-        <version>1.0-alpha-1-SNAPSHOT</version>        
-        <!-- must enable lifecycle extensions -->
+        <version>1.0-alpha-2-SNAPSHOT</version>
         <extensions>true</extensions>
       </plugin>
     </plugins>

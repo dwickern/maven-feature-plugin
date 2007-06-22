@@ -2,18 +2,16 @@ package org.codehaus.mojo.pde;
 
 /*
  * Copyright 2006 The Apache Software Foundation.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
+ * in compliance with the License. You may obtain a copy of the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software distributed under the License
+ * is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express
+ * or implied. See the License for the specific language governing permissions and limitations under
+ * the License.
  */
 
 import java.io.File;
@@ -44,7 +42,8 @@ public abstract class AbstractEclipsePDEMojo
 {
 
     /**
-     * A pde build.properties ${configs} must contain this many comma separated fields.
+     * A pde build.properties ${configs} must contain this many comma separated
+     * fields.
      */
     private static final int CONFIG_TUPLE = 3;
 
@@ -61,7 +60,8 @@ public abstract class AbstractEclipsePDEMojo
     /**
      * Contains the PDE project source
      * 
-     * @parameter expression="${pdeDirectory}" default-value="${project.basedir}"
+     * @parameter expression="${pdeDirectory}"
+     *            default-value="${project.basedir}"
      * @required
      * @readonly
      */
@@ -70,8 +70,9 @@ public abstract class AbstractEclipsePDEMojo
     /**
      * Build a product instead of a feature.
      * 
-     * If defined then a PDE Product will be built (instead of the feature, fragment or plug-in).
-     * This value defines the product file that will be used to build the product.
+     * If defined then a PDE Product will be built (instead of the feature,
+     * fragment or plug-in). This value defines the product file that will be
+     * used to build the product.
      * 
      * @parameter expression="${pdeProductFilename}"
      * @optional
@@ -79,8 +80,8 @@ public abstract class AbstractEclipsePDEMojo
     protected String pdeProductFilename;
 
     /**
-     * When a product build is run then use this version of the pde build scripts. The build scripts
-     * are located at
+     * When a product build is run then use this version of the pde build
+     * scripts. The build scripts are located at
      * ${eclipseInstall}/plugins/org.eclipse.pde.build_{pdeBuildVersion}/scripts/productBuild
      * 
      * @parameter expression="${pdeBuildVersion}"
@@ -89,15 +90,17 @@ public abstract class AbstractEclipsePDEMojo
     protected String pdeBuildVersion;
 
     /**
-     * When a product build is run, then the location of the PDE build configuration directory must
-     * be specified. A product build will expect a build.properties file to exist in this directory.
-     * You can use
+     * When a product build is run, then the location of the PDE build
+     * configuration directory must be specified. A product build will expect a
+     * build.properties file to exist in this directory. You can use
      * ${eclipseInstall}/plugins/org.eclipse.pde.build_{pdeBuildVersion}/templates/headless-build/build.properties
      * as a starter file. See
      * http://help.eclipse.org/help32/topic/org.eclipse.pde.doc.user/guide/tasks/pde_product_build.htm
-     * Building an RCP application from a product configuration file for more details.
+     * Building an RCP application from a product configuration file for more
+     * details.
      * 
-     * @parameter expression="${pdeBuildConfigDirectory}" default-value="buildConfiguration"
+     * @parameter expression="${pdeBuildConfigDirectory}"
+     *            default-value="buildConfiguration"
      * @optional
      */
     protected String pdeBuildConfigDirectory;
@@ -140,6 +143,11 @@ public abstract class AbstractEclipsePDEMojo
      * The eclipse startup.jar file.
      */
     private File startupJar;
+    
+    /**
+     * startup class in the startup jar
+     */
+    private String startupClass = "org.eclipse.core.launcher.Main";
 
     /**
      * The pdeDirectory/buildConfiguraion/build.properties file.
@@ -149,8 +157,10 @@ public abstract class AbstractEclipsePDEMojo
     /**
      * Execute the Mojo
      * 
-     * @throws MojoExecutionException build failure
-     * @throws MojoFailureException build failure
+     * @throws MojoExecutionException
+     *             build failure
+     * @throws MojoFailureException
+     *             build failure
      */
     public void execute()
         throws MojoExecutionException, MojoFailureException
@@ -161,8 +171,10 @@ public abstract class AbstractEclipsePDEMojo
     /**
      * Initialise the mojo.
      * 
-     * @throws MojoExecutionException build failure
-     * @throws MojoFailureException build failure
+     * @throws MojoExecutionException
+     *             build failure
+     * @throws MojoFailureException
+     *             build failure
      */
     protected void initialize()
         throws MojoExecutionException, MojoFailureException
@@ -173,12 +185,15 @@ public abstract class AbstractEclipsePDEMojo
             this.pdeDirectory = new File( System.getProperty( "user.dir" ) );
         }
 
-        this.startupJar = new File( this.eclipseInstall, "startup.jar" );
+        this.startupJar = this.findStartupJar();
+
         if ( !startupJar.exists() )
         {
             throw new MojoExecutionException( startupJar.getPath()
                 + " not found.  Have you set up your -DeclipseInstall?" );
         }
+        
+        this.getLog().info( "Startup jar found at: " + this.startupJar );
 
         if ( pdeProductFilename != null )
         {
@@ -188,7 +203,6 @@ public abstract class AbstractEclipsePDEMojo
             }
             // Fail fast on build.properties missing.
             loadBuildConfigurationProperties();
-            
         }
 
         this.descriptor = DescriptorUtil.getDescriptor( this.pdeDirectory, pdeProductFilename );
@@ -196,12 +210,40 @@ public abstract class AbstractEclipsePDEMojo
         // TODO check for empty id
 
     }
+    
+    protected File findStartupJar()
+    {
+        File startupJar = new File( this.eclipseInstall, "startup.jar" );
+        
+        if ( !startupJar.exists() )
+        {
+            // list all plugins and try to found a plugin that mathches
+            // org.eclipse.equinox.launcher_*.jar
+            // @TODO implement a mechanism to select the newer plugin
+
+            File[] plugins = new File( eclipseInstall.getAbsolutePath() + "/plugins/" ).listFiles();
+            for ( int i = 0; i < plugins.length; i++ )
+            {
+                if ( plugins[i].isFile() && plugins[i].getName().indexOf( "org.eclipse.equinox.launcher" ) >= 0 )
+                {
+                    startupJar = plugins[i];
+                    startupClass = "org.eclipse.equinox.launcher.Main";
+                    break;
+                }
+            }
+        }
+        
+        return startupJar;
+        
+    }
 
     /**
      * Execute the specified Commandline
      * 
-     * @param cl the Commandline to execute
-     * @throws MojoExecutionException build failures
+     * @param cl
+     *            the Commandline to execute
+     * @throws MojoExecutionException
+     *             build failures
      */
     protected void executeCommandLine( Commandline cl )
         throws MojoExecutionException
@@ -230,10 +272,13 @@ public abstract class AbstractEclipsePDEMojo
     }
 
     /**
-     * Create a command line to invoke an Ant build file using the Eclipse pde environment.
+     * Create a command line to invoke an Ant build file using the Eclipse pde
+     * environment.
      * 
-     * @param buildFile the Ant buildfile to use as part of the command
-     * @param targets the targets to invoke on the Ant build file
+     * @param buildFile
+     *            the Ant buildfile to use as part of the command
+     * @param targets
+     *            the targets to invoke on the Ant build file
      * @return A command line to invoke the targets on the Ant buildfile
      */
     protected Commandline createCommandLine( File buildFile, String targets )
@@ -248,7 +293,7 @@ public abstract class AbstractEclipsePDEMojo
 
         cl.createArgument().setFile( this.startupJar );
 
-        cl.createArgument().setValue( "org.eclipse.core.launcher.Main" );
+        cl.createArgument().setValue( this.startupClass );
 
         cl.createArgument().setValue( "-application" );
         cl.createArgument().setValue( "org.eclipse.ant.core.antRunner" );
@@ -278,7 +323,8 @@ public abstract class AbstractEclipsePDEMojo
     /**
      * Create a command line to invoke an Ant build file with the default target
      * 
-     * @param buildFile the Ant buildfile to use as part of the command
+     * @param buildFile
+     *            the Ant buildfile to use as part of the command
      * @return A command line to invoke the targets on the Ant buildfile
      */
     protected Commandline createCommandLine( File buildFile )
@@ -287,8 +333,8 @@ public abstract class AbstractEclipsePDEMojo
     }
 
     /**
-     * The PDE Build Directory, which is always located two directories higher than the pdeDirectory
-     * (i.e "../../${pdeDirectory")
+     * The PDE Build Directory, which is always located two directories higher
+     * than the pdeDirectory (i.e "../../${pdeDirectory")
      * 
      * @return The PDE Build Directory
      */
@@ -309,7 +355,8 @@ public abstract class AbstractEclipsePDEMojo
      * Load the properties from pdeBuildConfiguration\build.properties.
      * 
      * @return the properties from pdeBuildConfiguration\build.properties.
-     * @throws MojoExecutionException build failures.
+     * @throws MojoExecutionException
+     *             build failures.
      */
     protected PropertiesConfiguration loadBuildConfigurationProperties()
         throws MojoExecutionException
@@ -318,14 +365,14 @@ public abstract class AbstractEclipsePDEMojo
         {
             return buildConfigurationProperties;
         }
-    
+
         File buildPropertiesFile = new File( pdeDirectory, pdeBuildConfigDirectory + "/build.properties" );
         try
         {
             buildConfigurationProperties = new PropertiesConfiguration();
             buildConfigurationProperties.setDelimiterParsingDisabled( true );
             buildConfigurationProperties.load( buildPropertiesFile );
-    
+
             return buildConfigurationProperties;
         }
         catch ( ConfigurationException e )
@@ -336,14 +383,18 @@ public abstract class AbstractEclipsePDEMojo
     }
 
     /**
-     * Convert the list of {os, ws, arch} configurations to build as contained in the
-     * build.properties file ${configs} field into the filename suffix for the created artifact. *
+     * Convert the list of {os, ws, arch} configurations to build as contained
+     * in the build.properties file ${configs} field into the filename suffix
+     * for the created artifact. *
      * 
-     * <b>Note</b> PDE Build support multiple configs, here only one config is supported.
+     * <b>Note</b> PDE Build support multiple configs, here only one config is
+     * supported.
      * 
-     * @param configs the string form of the configs
+     * @param configs
+     *            the string form of the configs
      * @return the filename suffix for the configs
-     * @throws MojoExecutionException build failures.
+     * @throws MojoExecutionException
+     *             build failures.
      */
     protected String convertPdeConfigsToFilenameSuffix( String configs )
         throws MojoExecutionException

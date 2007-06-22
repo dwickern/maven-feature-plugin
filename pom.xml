@@ -2,7 +2,7 @@
   <parent>
     <groupId>org.codehaus.mojo</groupId>
     <artifactId>mojo</artifactId>
-    <version>14</version>
+    <version>15</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>pde-maven-plugin</artifactId>
@@ -41,6 +41,54 @@
       <email>baerrach@gmail.com</email>
     </contributor>
   </contributors>
+  
+  <repositories>
+    <repository>
+      <id>codehaus.org</id>
+      <name>Maven Central Development Repository</name>
+      <url>http://snapshots.repository.codehaus.org</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+    </repository>
+    <repository>
+      <id>apache.org</id>
+      <name>Apache Snapshot Development Plugin Repository</name>
+      <url>http://people.apache.org/repo/m2-snapshot-repository</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+    </repository>
+    <repository>
+      <id>maven.eclipse.org</id>
+      <name>Apache Snapshot Development Plugin Repository</name>
+      <url>http://repo1.maven.org/eclipse</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+    </repository>
+  </repositories>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>codehaus.org</id>
+      <name>Codehaus Snapshot Development Plugin Repository</name>
+      <url>http://snapshots.repository.codehaus.org</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+    </pluginRepository>
+    <pluginRepository>
+      <id>apache.org</id>
+      <name>Apache Snapshot Development Plugin Repository</name>
+      <url>http://people.apache.org/repo/m2-snapshot-repository</url>
+      <releases>
+        <enabled>false</enabled>
+      </releases>
+    </pluginRepository>
+    
+  </pluginRepositories>
+  
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -181,6 +229,7 @@
         </executions>
       </plugin>
       
+      <!--
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-docck-plugin</artifactId>
@@ -192,6 +241,7 @@
           </execution>
         </executions>
       </plugin>
+      -->
      
     </plugins>
   </build>

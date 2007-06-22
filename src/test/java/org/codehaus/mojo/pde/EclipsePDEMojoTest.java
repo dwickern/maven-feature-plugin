@@ -554,4 +554,19 @@ public class EclipsePDEMojoTest
         assertEquals( "win32.win32.x86", mojo.convertPdeConfigsToFilenameSuffix( "win32,win32,x86" ) );
     }
 
+    /**
+     * Test to make sure we can lookup startup jar for for eclipse 3.3
+     * 
+     * @throws Exception test failures.
+     */
+    public void testStarupLookupForEclipse33()
+        throws Exception
+    {
+        File pluginXml = new File( getBasedir(), "src/test/resources/build/build-plugin-config-3.3.xml" );
+        EclipsePDEExtMojo mojo = (EclipsePDEExtMojo) lookupMojo( "ext", pluginXml );
+        File startupFile = mojo.findStartupJar();
+        assertTrue( startupFile.exists() );
+        
+    }
+    
 }

@@ -15,6 +15,9 @@
       
       <plugin>
         <artifactId>maven-scm-plugin</artifactId>
+        <configuration>
+          <skipCheckoutIfExists>true</skipCheckoutIfExists>
+        </configuration>
         <executions>
         
           <execution>
