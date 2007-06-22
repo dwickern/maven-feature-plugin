@@ -262,12 +262,19 @@ public abstract class AbstractEclipsePDEMojo
         }
         catch ( CommandLineException e )
         {
-            throw new MojoExecutionException( "Error executing command line", e );
+            throw new MojoExecutionException( "Error executing PDE build command line.", e );
         }
 
+        /* return code 13 from PDE means the real error is in the build log file */
+        if ( ok == 13 )
+        {
+            throw new MojoExecutionException( "Error returned by PDE build. The cause for this error should be found within the PDE build logfile.");
+        }
+        
+        /* otherwise something else went pear shaped */
         if ( ok != 0 )
         {
-            throw new MojoExecutionException( "Error executing command line. Exit code:" + ok );
+            throw new MojoExecutionException( "Error returned by PDE build. Exit code: " + ok );
         }
     }
 
