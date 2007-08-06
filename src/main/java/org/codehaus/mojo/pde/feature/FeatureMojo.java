@@ -27,9 +27,11 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.model.License;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -37,10 +39,13 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.osgi.Maven2OsgiConverter;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.pde.internal.core.feature.Feature;
+import org.eclipse.pde.internal.core.feature.FeatureData;
 import org.eclipse.pde.internal.core.feature.FeatureImport;
 import org.eclipse.pde.internal.core.feature.FeatureInfo;
 import org.eclipse.pde.internal.core.feature.FeaturePlugin;
 import org.eclipse.pde.internal.core.feature.WorkspaceFeatureModel;
+import org.eclipse.pde.internal.core.ifeature.IFeature;
+import org.eclipse.pde.internal.core.ifeature.IFeatureData;
 import org.eclipse.pde.internal.core.ifeature.IFeatureImport;
 import org.eclipse.pde.internal.core.ifeature.IFeatureModel;
 import org.eclipse.pde.internal.core.ifeature.IFeaturePlugin;
@@ -166,13 +171,18 @@ public class FeatureMojo
             feature.setVersion( maven2OsgiConverter.getVersion( getProject().getVersion() ) );
             feature.setProviderName( '%' + PROVIDER_NAME_PROPERTY );
 
-            // IFeatureData data = new FeatureData();
-            // feature.addData( new IFeatureData[] { data } );
+            IFeatureData data = new FeatureData();
+            feature.addData( new IFeatureData[] { data } );
 
-            FeatureInfo info = new FeatureInfo( 0 );
-            info.setModel( model );
-            info.setDescription( '%' + DESCRIPTION_PROPERTY );
-            feature.setFeatureInfo( info, 0 );
+            FeatureInfo description = new FeatureInfo( IFeature.INFO_DESCRIPTION );
+            description.setModel( model );
+            description.setDescription( '%' + DESCRIPTION_PROPERTY );
+            feature.setFeatureInfo( description, IFeature.INFO_DESCRIPTION );
+
+            FeatureInfo license = new FeatureInfo( IFeature.INFO_LICENSE );
+            license.setModel( model );
+            license.setDescription( '%' + LICENSE_PROPERTY );
+            feature.setFeatureInfo( license, IFeature.INFO_LICENSE );
 
             ArrayList plugins = new ArrayList( getArtifacts().size() );
             ArrayList imports = new ArrayList( getArtifacts().size() );
@@ -254,9 +264,21 @@ public class FeatureMojo
 
         put( properties, DESCRIPTION_PROPERTY, getProject().getDescription() );
 
-        // put(properties, LICENSE_URL_PROPERTY ,getProject().getLicenses());
-
-        // put(properties, LICENSE_PROPERTY,);
+        List licenses = getProject().getLicenses();
+        if ( licenses.isEmpty() )
+        {
+            getLog().info( "No license in pom" );
+        }
+        else if ( licenses.size() > 1 )
+        {
+            throw new MojoFailureException( "There is more than one license in the pom, "
+                + "features can only have one license" );
+        }
+        else
+        {
+            License license = (License) getProject().getLicenses().get( 0 );
+            put( properties, LICENSE_URL_PROPERTY, license.getName() );
+        }
 
         return properties;
     }
