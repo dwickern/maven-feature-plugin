@@ -171,9 +171,6 @@ public class FeatureMojo
             feature.setVersion( maven2OsgiConverter.getVersion( getProject().getVersion() ) );
             feature.setProviderName( '%' + PROVIDER_NAME_PROPERTY );
 
-            IFeatureData data = new FeatureData();
-            feature.addData( new IFeatureData[] { data } );
-
             FeatureInfo description = new FeatureInfo( IFeature.INFO_DESCRIPTION );
             description.setModel( model );
             description.setDescription( '%' + DESCRIPTION_PROPERTY );
@@ -181,6 +178,7 @@ public class FeatureMojo
 
             FeatureInfo license = new FeatureInfo( IFeature.INFO_LICENSE );
             license.setModel( model );
+            license.setURL( '%' + LICENSE_URL_PROPERTY );
             license.setDescription( '%' + LICENSE_PROPERTY );
             feature.setFeatureInfo( license, IFeature.INFO_LICENSE );
 
@@ -277,7 +275,8 @@ public class FeatureMojo
         else
         {
             License license = (License) getProject().getLicenses().get( 0 );
-            put( properties, LICENSE_URL_PROPERTY, license.getName() );
+            put( properties, LICENSE_URL_PROPERTY, license.getUrl() );
+            put( properties, LICENSE_PROPERTY, license.getName() );
         }
 
         return properties;
