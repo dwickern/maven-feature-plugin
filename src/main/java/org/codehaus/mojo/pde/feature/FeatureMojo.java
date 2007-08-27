@@ -200,8 +200,9 @@ public class FeatureMojo
                     featurePlugin.setModel( model );
                     featurePlugin.setId( maven2OsgiConverter.getBundleSymbolicName( artifact ) );
                     featurePlugin.setVersion( maven2OsgiConverter.getVersion( artifact ) );
-                    featurePlugin.setInstallSize( artifact.getFile().length() );
-                    featurePlugin.setDownloadSize( artifact.getFile().length() );
+                    long size = artifact.getFile().length() / 1024;
+                    featurePlugin.setInstallSize( size );
+                    featurePlugin.setDownloadSize( size );
                     plugins.add( featurePlugin );
                 }
                 else
