@@ -32,6 +32,7 @@ import java.util.Properties;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.model.License;
+import org.apache.maven.model.Organization;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
@@ -39,13 +40,11 @@ import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.osgi.Maven2OsgiConverter;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.pde.internal.core.feature.Feature;
-import org.eclipse.pde.internal.core.feature.FeatureData;
 import org.eclipse.pde.internal.core.feature.FeatureImport;
 import org.eclipse.pde.internal.core.feature.FeatureInfo;
 import org.eclipse.pde.internal.core.feature.FeaturePlugin;
 import org.eclipse.pde.internal.core.feature.WorkspaceFeatureModel;
 import org.eclipse.pde.internal.core.ifeature.IFeature;
-import org.eclipse.pde.internal.core.ifeature.IFeatureData;
 import org.eclipse.pde.internal.core.ifeature.IFeatureImport;
 import org.eclipse.pde.internal.core.ifeature.IFeatureModel;
 import org.eclipse.pde.internal.core.ifeature.IFeaturePlugin;
@@ -182,6 +181,11 @@ public class FeatureMojo
             license.setDescription( '%' + LICENSE_PROPERTY );
             feature.setFeatureInfo( license, IFeature.INFO_LICENSE );
 
+            FeatureInfo copyright = new FeatureInfo( IFeature.INFO_COPYRIGHT );
+            copyright.setModel( model );
+            copyright.setDescription( '%' + COPYRIGHT_PROPERTY );
+            feature.setFeatureInfo( copyright, IFeature.INFO_COPYRIGHT );
+
             ArrayList plugins = new ArrayList( getArtifacts().size() );
             ArrayList imports = new ArrayList( getArtifacts().size() );
 
@@ -225,18 +229,23 @@ public class FeatureMojo
     {
         File featureFile = new File( getOutputDirectory(), "feature.xml" );
         featureFile.getParentFile().mkdirs();
-        PrintWriter writer;
+        PrintWriter writer = null;
         try
         {
             writer = new PrintWriter( featureFile );
+            feature.write( "", writer );
         }
         catch ( FileNotFoundException e )
         {
             throw new MojoExecutionException( "Unable to create feature file: " + featureFile, e );
         }
-
-        feature.write( "", writer );
-        writer.flush();
+        finally
+        {
+            if ( writer != null )
+            {
+                writer.close();
+            }
+        }
     }
 
     private void put( Properties properties, String key, String value )
@@ -254,10 +263,19 @@ public class FeatureMojo
 
         put( properties, FEATURE_NAME_PROPERTY, getProject().getName() );
 
-        if ( getProject().getOrganization() != null )
+        Organization organization = getProject().getOrganization();
+        if ( organization != null )
         {
-            put( properties, PROVIDER_NAME_PROPERTY, getProject().getOrganization().getName() );
-            put( properties, COPYRIGHT_PROPERTY, getProject().getOrganization().getName() );
+            put( properties, PROVIDER_NAME_PROPERTY, organization.getName() );
+            StringBuilder sb = new StringBuilder();
+            sb.append( "Copyright " );
+            sb.append( organization.getName() );
+            if ( organization.getUrl() != null )
+            {
+                sb.append( " " );
+                sb.append( organization.getUrl() );
+            }
+            put( properties, COPYRIGHT_PROPERTY, sb.toString() );
         }
 
         put( properties, DESCRIPTION_PROPERTY, getProject().getDescription() );
@@ -265,7 +283,7 @@ public class FeatureMojo
         List licenses = getProject().getLicenses();
         if ( licenses.isEmpty() )
         {
-            getLog().info( "No license in pom" );
+            getLog().warn( "No license in pom. This feature will not work in an update site." );
         }
         else if ( licenses.size() > 1 )
         {
@@ -288,15 +306,30 @@ public class FeatureMojo
         File propertiesFile = new File( getOutputDirectory(), "feature.properties" );
         propertiesFile.getParentFile().mkdirs();
 
+        OutputStream out = null;
         try
         {
-            OutputStream out = new FileOutputStream( propertiesFile );
+            out = new FileOutputStream( propertiesFile );
 
             properties.store( out, "" );
         }
         catch ( IOException e )
         {
             throw new MojoExecutionException( "Unable to create properties file: " + propertiesFile, e );
+        }
+        finally
+        {
+            if ( out != null )
+            {
+                try
+                {
+                    out.close();
+                }
+                catch ( IOException e )
+                {
+                    // ignore
+                }
+            }
         }
     }
 }
