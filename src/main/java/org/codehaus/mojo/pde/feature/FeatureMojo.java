@@ -283,7 +283,7 @@ public class FeatureMojo
         List licenses = getProject().getLicenses();
         if ( licenses.isEmpty() )
         {
-            getLog().warn( "No license in pom. This feature will not work in an update site." );
+            throw new MojoFailureException( "No license in pom. This feature will not work in an update site." );
         }
         else if ( licenses.size() > 1 )
         {
