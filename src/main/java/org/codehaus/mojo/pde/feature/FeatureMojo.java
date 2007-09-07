@@ -203,6 +203,7 @@ public class FeatureMojo
                     long size = artifact.getFile().length() / 1024;
                     featurePlugin.setInstallSize( size );
                     featurePlugin.setDownloadSize( size );
+                    featurePlugin.setUnpack( false );
                     plugins.add( featurePlugin );
                 }
                 else
