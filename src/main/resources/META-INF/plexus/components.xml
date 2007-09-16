@@ -91,7 +91,7 @@
         <classifier></classifier>
         <extension>jar</extension>
         <type>eclipse-feature</type>
-        <packaging>jar</packaging>
+        <packaging>eclipse-feature</packaging>
         <language>java</language>
         <addedToClasspath>false</addedToClasspath>
       </configuration>
