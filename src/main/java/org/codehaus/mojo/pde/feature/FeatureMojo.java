@@ -38,6 +38,7 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.osgi.Maven2OsgiConverter;
+import org.codehaus.mojo.pde.updatesite.UpdateSiteMojo;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.pde.internal.core.feature.Feature;
 import org.eclipse.pde.internal.core.feature.FeatureImport;
@@ -211,6 +212,15 @@ public class FeatureMojo
                     FeatureImport featureImport = new FeatureImport();
                     featureImport.setModel( model );
                     featureImport.setId( maven2OsgiConverter.getBundleSymbolicName( artifact ) );
+                    if ( UpdateSiteMojo.ECLIPSE_FEATURE_TYPE.equals( artifact.getType() ) )
+                    {
+                        featureImport.setType( IFeatureImport.FEATURE );
+                    }
+                    else
+                    {
+                        featureImport.setType( IFeatureImport.PLUGIN );
+                    }
+                    featureImport.setVersion( maven2OsgiConverter.getVersion( artifact ) );
                     imports.add( featureImport );
                 }
             }
