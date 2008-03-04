@@ -31,12 +31,19 @@ import java.util.List;
 import java.util.Properties;
 
 import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.factory.ArtifactFactory;
+import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
+import org.apache.maven.artifact.repository.ArtifactRepository;
+import org.apache.maven.artifact.resolver.ArtifactCollector;
 import org.apache.maven.model.License;
 import org.apache.maven.model.Organization;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
+import org.apache.maven.shared.dependency.tree.DependencyNode;
+import org.apache.maven.shared.dependency.tree.DependencyTreeBuilder;
+import org.apache.maven.shared.dependency.tree.DependencyTreeBuilderException;
 import org.apache.maven.shared.osgi.Maven2OsgiConverter;
 import org.codehaus.mojo.pde.updatesite.UpdateSiteMojo;
 import org.eclipse.core.runtime.CoreException;
@@ -84,8 +91,8 @@ public class FeatureMojo
     private MavenProject project;
 
     /**
-     * The list of resolved dependencies from the current project. Since we're not resolving the
-     * dependencies by hand here, the build will fail if some of these dependencies do not resolve.
+     * The list of resolved dependencies from the current project. Since we're not resolving the dependencies by hand
+     * here, the build will fail if some of these dependencies do not resolve.
      * 
      * @parameter default-value="${project.artifacts}"
      * @required
@@ -102,9 +109,9 @@ public class FeatureMojo
     private File outputDirectory;
 
     /**
-     * Whether to add dependencies as imports or include them as part of the feature. If
-     * <code>true</code>, all Maven dependencies that are not in the same groupId as this project
-     * will be added as Eclipse plugin dependencies.
+     * Whether to add dependencies as imports or include them as part of the feature. If <code>true</code>, all Maven
+     * dependencies that are not in the same groupId as this project will be added as Eclipse plugin dependencies.
+     * Dependencies of type "eclipse-feature" are always imported.
      * 
      * @parameter
      */
@@ -114,6 +121,35 @@ public class FeatureMojo
      * @component
      */
     private Maven2OsgiConverter maven2OsgiConverter;
+
+    /**
+     * @component
+     */
+    private DependencyTreeBuilder dependencyTreeBuilder;
+
+    /**
+     * Local repository.
+     * 
+     * @parameter expression="${localRepository}"
+     * @required
+     * @readonly
+     */
+    private ArtifactRepository localRepository;
+
+    /**
+     * @component
+     */
+    private ArtifactMetadataSource artifactMetadataSource;
+
+    /**
+     * @component
+     */
+    private ArtifactCollector collector;
+
+    /**
+     * @component
+     */
+    private ArtifactFactory factory;
 
     void setProject( MavenProject project )
     {
@@ -190,40 +226,19 @@ public class FeatureMojo
             ArrayList plugins = new ArrayList( getArtifacts().size() );
             ArrayList imports = new ArrayList( getArtifacts().size() );
 
-            for ( Iterator it = getArtifacts().iterator(); it.hasNext(); )
+            DependencyNode dependencyTree;
+            try
             {
-                Artifact artifact = (Artifact) it.next();
-
-                /* include plugin vs depend on it */
-                if ( !useImports || artifact.getGroupId().equals( getProject().getGroupId() ) )
-                {
-                    FeaturePlugin featurePlugin = new FeaturePlugin();
-                    featurePlugin.setModel( model );
-                    featurePlugin.setId( maven2OsgiConverter.getBundleSymbolicName( artifact ) );
-                    featurePlugin.setVersion( maven2OsgiConverter.getVersion( artifact ) );
-                    long size = artifact.getFile().length() / 1024;
-                    featurePlugin.setInstallSize( size );
-                    featurePlugin.setDownloadSize( size );
-                    featurePlugin.setUnpack( false );
-                    plugins.add( featurePlugin );
-                }
-                else
-                {
-                    FeatureImport featureImport = new FeatureImport();
-                    featureImport.setModel( model );
-                    featureImport.setId( maven2OsgiConverter.getBundleSymbolicName( artifact ) );
-                    if ( UpdateSiteMojo.ECLIPSE_FEATURE_TYPE.equals( artifact.getType() ) )
-                    {
-                        featureImport.setType( IFeatureImport.FEATURE );
-                    }
-                    else
-                    {
-                        featureImport.setType( IFeatureImport.PLUGIN );
-                    }
-                    featureImport.setVersion( maven2OsgiConverter.getVersion( artifact ) );
-                    imports.add( featureImport );
-                }
+                dependencyTree =
+                    dependencyTreeBuilder.buildDependencyTree( project, localRepository, factory,
+                                                               artifactMetadataSource, null, collector );
             }
+            catch ( DependencyTreeBuilderException e )
+            {
+                throw new MojoExecutionException( "Unable to build dependency tree", e );
+            }
+
+            processNode( dependencyTree, model, plugins, imports );
 
             feature.addPlugins( (IFeaturePlugin[]) plugins.toArray( new IFeaturePlugin[plugins.size()] ) );
             feature.addImports( (IFeatureImport[]) imports.toArray( new IFeatureImport[imports.size()] ) );
@@ -234,6 +249,91 @@ public class FeatureMojo
         }
 
         return feature;
+    }
+
+    private void processNode( DependencyNode dependencyNode, IFeatureModel model, List plugins, List imports )
+        throws CoreException, MojoExecutionException
+    {
+        for ( Iterator it = dependencyNode.getChildren().iterator(); it.hasNext(); )
+        {
+            DependencyNode node = (DependencyNode) it.next();
+
+            if ( node.getState() != DependencyNode.INCLUDED )
+            {
+                continue;
+            }
+
+            Artifact artifact = node.getArtifact();
+
+            if ( Artifact.SCOPE_SYSTEM.equals( artifact.getScope() ) )
+            {
+                getLog().debug( "Ignoring system scoped artifact " + artifact );
+                continue;
+            }
+
+            /* do not add children of features, Eclipse will handle that, and features are always imported */
+            if ( UpdateSiteMojo.ECLIPSE_FEATURE_TYPE.equals( artifact.getType() ) )
+            {
+                imports.add( createFeatureImport( model, node ) );
+                continue;
+            }
+            else
+
+            /* if it's not a feature we can include it or depend on it */
+            if ( !useImports || artifact.getGroupId().equals( getProject().getGroupId() ) )
+            {
+                plugins.add( createFeaturePlugin( model, node ) );
+            }
+            else
+            {
+                imports.add( createFeatureImport( model, node ) );
+            }
+
+            /* continue with the children */
+            processNode( node, model, plugins, imports );
+        }
+    }
+
+    private IFeaturePlugin createFeaturePlugin( IFeatureModel model, DependencyNode node )
+        throws CoreException, MojoExecutionException
+    {
+        FeaturePlugin featurePlugin = new FeaturePlugin();
+        featurePlugin.setModel( model );
+        featurePlugin.setId( maven2OsgiConverter.getBundleSymbolicName( node.getArtifact() ) );
+        featurePlugin.setVersion( maven2OsgiConverter.getVersion( node.getArtifact() ) );
+        File file = node.getArtifact().getFile();
+        if ( file == null )
+        {
+            /* the file was already resolved, it's just that is not available in the dependency node */
+            file = new File( this.localRepository.getBasedir(), this.localRepository.pathOf( node.getArtifact() ) );
+        }
+        long size = file.length() / 1024;
+        featurePlugin.setInstallSize( size );
+        featurePlugin.setDownloadSize( size );
+        featurePlugin.setUnpack( false );
+        return featurePlugin;
+    }
+
+    private IFeatureImport createFeatureImport( IFeatureModel model, DependencyNode node )
+        throws CoreException
+    {
+        FeatureImport featureImport = new FeatureImport();
+        featureImport.setModel( model );
+        featureImport.setId( maven2OsgiConverter.getBundleSymbolicName( node.getArtifact() ) );
+        if ( UpdateSiteMojo.ECLIPSE_FEATURE_TYPE.equals( node.getArtifact().getType() ) )
+        {
+            featureImport.setType( IFeatureImport.FEATURE );
+        }
+        else
+        {
+            featureImport.setType( IFeatureImport.PLUGIN );
+        }
+
+        String version = node.getArtifact().getVersion();
+        featureImport.setVersion( maven2OsgiConverter.getVersion( version ) );
+        featureImport.setMatch( IFeatureImport.COMPATIBLE );
+
+        return featureImport;
     }
 
     private void writeFeature( Feature feature )
