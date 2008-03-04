@@ -19,13 +19,15 @@
 package org.codehaus.mojo.pde.updatesite;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Map;
 
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.AbstractMojo;
@@ -66,8 +68,8 @@ public class UpdateSiteMojo
     private MavenProject project;
 
     /**
-     * The list of resolved dependencies from the current project. Since we're not resolving the
-     * dependencies by hand here, the build will fail if some of these dependencies do not resolve.
+     * The list of resolved dependencies from the current project. Since we're not resolving the dependencies by hand
+     * here, the build will fail if some of these dependencies do not resolve.
      * 
      * @parameter default-value="${project.artifacts}"
      * @required
@@ -84,16 +86,15 @@ public class UpdateSiteMojo
     private File outputDirectory;
 
     /**
-     * Whether to add dependencies as imports or include them as part of the feature. If
-     * <code>true</code>, all Maven dependencies that are not in the same groupId as this project
-     * will be added as Eclipse plugin dependencies.
+     * Whether to add dependencies as imports or include them as part of the feature. If <code>true</code>, all Maven
+     * dependencies that are not in the same groupId as this project will be added as Eclipse plugin dependencies.
      * 
      * @parameter
      */
     private boolean useImports = false;
 
     /**
-     * @component 
+     * @component
      */
     private Maven2OsgiConverter maven2OsgiConverter;
 
@@ -142,6 +143,14 @@ public class UpdateSiteMojo
         try
         {
             ISiteModel model = new WorkspaceSiteModel( null );
+
+            File siteFile = new File( getOutputDirectory(), "site.xml" );
+
+            if ( siteFile.exists() )
+            {
+                loadSite( model, siteFile );
+            }
+
             site.setModel( model );
 
             SiteDescription siteDescription = new SiteDescription();
@@ -152,7 +161,12 @@ public class UpdateSiteMojo
             site.setDescription( siteDescription );
             site.setLabel( getProject().getName() );
 
-            List features = new ArrayList();
+            Map features = new HashMap();
+            ISiteFeature[] existingFeatures = model.getSite().getFeatures();
+            for ( int i = 0; i < existingFeatures.length; i++ )
+            {
+                features.put( existingFeatures[i].getURL(), existingFeatures[i] );
+            }
 
             for ( Iterator it = getArtifacts().iterator(); it.hasNext(); )
             {
@@ -168,9 +182,9 @@ public class UpdateSiteMojo
                 siteFeature.setModel( model );
                 siteFeature.setId( maven2OsgiConverter.getBundleSymbolicName( artifact ) );
                 siteFeature.setVersion( maven2OsgiConverter.getVersion( artifact ) );
-                siteFeature.setURL( featuresDirectory.getName() + "/"
-                    + maven2OsgiConverter.getBundleFileName( artifact ) );
-                features.add( siteFeature );
+                siteFeature.setURL( featuresDirectory.getName() + "/" +
+                    maven2OsgiConverter.getBundleFileName( artifact ) );
+                features.put( siteFeature.getURL(), siteFeature );
 
                 /* copy the feature jar to the features folder */
                 File from = artifact.getFile();
@@ -185,12 +199,12 @@ public class UpdateSiteMojo
                 }
                 catch ( IOException e )
                 {
-                    throw new MojoExecutionException( "Unable to copy file from " + from.getAbsolutePath() + " to "
-                        + to.getAbsolutePath(), e );
+                    throw new MojoExecutionException( "Unable to copy file from " + from.getAbsolutePath() + " to " +
+                        to.getAbsolutePath(), e );
                 }
             }
 
-            site.addFeatures( (ISiteFeature[]) features.toArray( new ISiteFeature[features.size()] ) );
+            site.addFeatures( (ISiteFeature[]) features.values().toArray( new ISiteFeature[features.size()] ) );
         }
         catch ( CoreException e )
         {
@@ -200,10 +214,39 @@ public class UpdateSiteMojo
         return site;
     }
 
+    private void loadSite( ISiteModel model, File siteFile )
+        throws MojoExecutionException, CoreException
+    {
+        InputStream is = null;
+        try
+        {
+            is = new FileInputStream( siteFile );
+            model.load( is, true );
+        }
+        catch ( FileNotFoundException e )
+        {
+            throw new MojoExecutionException( "File was not found", e );
+        }
+        finally
+        {
+            if ( is != null )
+            {
+                try
+                {
+                    is.close();
+                }
+                catch ( IOException e )
+                {
+                }
+            }
+        }
+    }
+
     private void writeSite( Site site )
         throws MojoExecutionException, MojoFailureException
     {
         File siteFile = new File( getOutputDirectory(), "site.xml" );
+
         siteFile.getParentFile().mkdirs();
         PrintWriter writer;
         try

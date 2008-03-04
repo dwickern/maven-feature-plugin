@@ -27,7 +27,7 @@ import org.apache.maven.model.Organization;
 import org.apache.maven.plugin.testing.AbstractMojoTestCase;
 import org.apache.maven.plugin.testing.stubs.ArtifactStub;
 import org.apache.maven.project.MavenProject;
-import org.eclipse.pde.internal.core.site.Site;
+import org.codehaus.plexus.util.FileUtils;
 
 public class UpdateSiteMojoTest
     extends AbstractMojoTestCase
@@ -70,12 +70,15 @@ public class UpdateSiteMojoTest
         a.setFile( getTestFile( "src/test/resources/com.jcraft.jsch_0.1.27.jar" ) );
         artifacts.add( a );
 
-        File siteFile = getTestFile( "target/test-classes/site.xml" );
+        File siteFile = getTestFile( "target/test-classes/updatesite/site.xml" );
         mojo.setProject( project );
         mojo.setArtifacts( artifacts );
         mojo.setOutputDirectory( siteFile.getParentFile() );
 
         mojo.execute();
-    }
 
+        String siteContent = FileUtils.fileRead( siteFile );
+        assertTrue( siteContent.contains( "features/com.jcraft.jsch_1.1.2.jar" ) );
+        assertTrue( siteContent.contains( "features/org.codehaus.mojo.pde.afeature_1.0.0.20080101.jar" ) );
+    }
 }
