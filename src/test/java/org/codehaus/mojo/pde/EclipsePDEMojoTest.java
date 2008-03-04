@@ -77,7 +77,7 @@ public class EclipsePDEMojoTest
                 + " -verbose -debug" + " -DbuildTempFolder=" + mojo.pdeBuildTempFolder
                 + " -DjavacFailOnError=true -Dproperty1=value1";
 
-        assertEquals( expected, cl.toString() );
+        assertTrue( cl.toString().contains( expected ) );
     }
 
     /**
@@ -104,7 +104,7 @@ public class EclipsePDEMojoTest
                 + " -verbose -debug" + " -DbuildTempFolder=" + mojo.pdeBuildTempFolder
                 + " -DjavacFailOnError=true -Dproperty1=value1";
 
-        assertEquals( expected, cl.toString() );
+        assertTrue( cl.toString().contains( expected ) );
     }
 
     /**
@@ -128,7 +128,8 @@ public class EclipsePDEMojoTest
                 + " org.eclipse.core.launcher.Main -application org.eclipse.ant.core.antRunner" + " -buildfile "
                 + new File( mojo.pdeDirectory, "build.xml" ) + " clean build.jars zip.plugin" + " -verbose -debug"
                 + " -DbuildTempFolder=" + mojo.pdeBuildTempFolder + " -DjavacFailOnError=true -Dproperty1=value1";
-        assertEquals( expected, cl.toString() );
+
+        assertTrue( cl.toString().contains( expected ) );
     }
 
     /**
@@ -152,7 +153,8 @@ public class EclipsePDEMojoTest
                 + " org.eclipse.core.launcher.Main -application org.eclipse.ant.core.antRunner" + " -buildfile \""
                 + new File( mojo.pdeDirectory, "build.xml" ) + "\" clean build.jars zip.plugin" + " -verbose -debug"
                 + " -DbuildTempFolder=" + mojo.pdeBuildTempFolder + " -DjavacFailOnError=true -Dproperty1=value1";
-        assertEquals( expected, cl.toString() );
+
+        assertTrue( cl.toString().contains( expected ) );
     }
 
     /**
@@ -177,7 +179,8 @@ public class EclipsePDEMojoTest
                 + " org.eclipse.core.launcher.Main -application org.eclipse.ant.core.antRunner" + " -buildfile "
                 + new File( mojo.pdeDirectory, "build.xml" ) + " clean build.jars zip.plugin" + " -verbose -debug"
                 + " -DbuildTempFolder=" + mojo.pdeBuildTempFolder + " -DjavacFailOnError=true -Dproperty1=value1";
-        assertEquals( expected, cl.toString() );
+
+        assertTrue( cl.toString().contains( expected ) );
     }
 
     /**
@@ -219,8 +222,8 @@ public class EclipsePDEMojoTest
                 + expectedBuildfile.getPath() + " -Dbuilder=" + expectedPdeBuildConfigDirectory.getPath()
                 + " -DbuildDirectory=" + mojo.getPDEBuildDirectory().getPath() + " -DbuildTempFolder="
                 + mojo.pdeBuildTempFolder + " -DjavacFailOnError=true";
-        assertEquals( expected, cl.toString() );
 
+        assertTrue( cl.toString().contains( expected ) );
     }
 
     /**
@@ -265,7 +268,8 @@ public class EclipsePDEMojoTest
                 + expectedBuildfile.getPath() + " -Dbuilder=" + expectedPdeBuildConfigDirectory.getPath()
                 + " -DbuildDirectory=" + mojo.getPDEBuildDirectory().getPath() + " -DbuildTempFolder="
                 + mojo.pdeBuildTempFolder + " -DjavacFailOnError=true";
-        assertEquals( expected, cl.toString() );
+
+        assertTrue( cl.toString().contains( expected ) );
     }
 
     /**
@@ -294,7 +298,7 @@ public class EclipsePDEMojoTest
                 + " org.eclipse.core.launcher.Main -application org.eclipse.ant.core.antRunner -buildfile "
                 + new File( "target/pdeBuilder/build.xml" ) + " -verbose -debug";
 
-        assertEquals( expected, cl.toString() );
+        assertTrue( cl.toString().contains( expected ) );
 
         mojo.execute();
 
