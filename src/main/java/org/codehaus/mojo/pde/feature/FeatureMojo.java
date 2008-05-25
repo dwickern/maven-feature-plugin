@@ -19,7 +19,6 @@
 package org.codehaus.mojo.pde.feature;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -46,6 +45,7 @@ import org.apache.maven.shared.dependency.tree.DependencyTreeBuilder;
 import org.apache.maven.shared.dependency.tree.DependencyTreeBuilderException;
 import org.apache.maven.shared.osgi.Maven2OsgiConverter;
 import org.codehaus.mojo.pde.updatesite.UpdateSiteMojo;
+import org.codehaus.plexus.util.WriterFactory;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.pde.internal.core.feature.Feature;
 import org.eclipse.pde.internal.core.feature.FeatureImport;
@@ -344,10 +344,10 @@ public class FeatureMojo
         PrintWriter writer = null;
         try
         {
-            writer = new PrintWriter( featureFile );
+            writer = new PrintWriter( WriterFactory.newXmlWriter( featureFile ) );
             feature.write( "", writer );
         }
-        catch ( FileNotFoundException e )
+        catch ( IOException e )
         {
             throw new MojoExecutionException( "Unable to create feature file: " + featureFile, e );
         }
@@ -379,7 +379,7 @@ public class FeatureMojo
         if ( organization != null )
         {
             put( properties, PROVIDER_NAME_PROPERTY, organization.getName() );
-            StringBuilder sb = new StringBuilder();
+            StringBuffer sb = new StringBuffer();
             sb.append( "Copyright " );
             sb.append( organization.getName() );
             if ( organization.getUrl() != null )

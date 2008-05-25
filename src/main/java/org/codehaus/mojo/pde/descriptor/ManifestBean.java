@@ -18,8 +18,9 @@ package org.codehaus.mojo.pde.descriptor;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.util.ArrayList;
+
+import org.codehaus.plexus.util.ReaderFactory;
 
 /**
  * MANIFEST.MF java object
@@ -57,7 +58,7 @@ public class ManifestBean
         BufferedReader reader;
         try
         {
-            reader = new BufferedReader( new FileReader( new File( dir, "META-INF/MANIFEST.MF" ) ) );
+            reader = new BufferedReader( ReaderFactory.newReader( new File( dir, "META-INF/MANIFEST.MF" ), "UTF-8" ) );
         }
         catch ( Exception e )
         {

@@ -36,6 +36,8 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.project.MavenProject;
 import org.apache.maven.shared.osgi.Maven2OsgiConverter;
 import org.codehaus.plexus.util.FileUtils;
+import org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.WriterFactory;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.pde.internal.core.isite.ISiteFeature;
 import org.eclipse.pde.internal.core.isite.ISiteModel;
@@ -229,16 +231,7 @@ public class UpdateSiteMojo
         }
         finally
         {
-            if ( is != null )
-            {
-                try
-                {
-                    is.close();
-                }
-                catch ( IOException e )
-                {
-                }
-            }
+            IOUtil.close( is );
         }
     }
 
@@ -251,14 +244,14 @@ public class UpdateSiteMojo
         PrintWriter writer;
         try
         {
-            writer = new PrintWriter( siteFile );
+            writer = new PrintWriter( WriterFactory.newXmlWriter( siteFile ) );
         }
-        catch ( FileNotFoundException e )
+        catch ( IOException e )
         {
             throw new MojoExecutionException( "Unable to create update site file: " + siteFile, e );
         }
 
         site.write( "", writer );
-        writer.flush();
+        writer.close();
     }
 }

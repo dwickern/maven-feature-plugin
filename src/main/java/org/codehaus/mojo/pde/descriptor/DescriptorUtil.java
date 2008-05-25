@@ -17,7 +17,6 @@ package org.codehaus.mojo.pde.descriptor;
  */
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 
@@ -27,6 +26,7 @@ import org.codehaus.mojo.pde.descriptor.io.xpp3.FragmentXpp3Reader;
 import org.codehaus.mojo.pde.descriptor.io.xpp3.PluginXpp3Reader;
 import org.codehaus.mojo.pde.descriptor.io.xpp3.ProductXpp3Reader;
 import org.codehaus.plexus.util.IOUtil;
+import org.codehaus.plexus.util.ReaderFactory;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 
 /**
@@ -97,7 +97,7 @@ public class DescriptorUtil
         {
             try
             {
-                descriptor = readFeatureDescriptor( new FileReader( file ) );
+                descriptor = readFeatureDescriptor( ReaderFactory.newXmlReader( file ) );
             }
             catch ( IOException e )
             {
@@ -126,7 +126,7 @@ public class DescriptorUtil
         {
             try
             {
-                descriptor = readFeatureDescriptor( new FileReader( file ) );
+                descriptor = readFeatureDescriptor( ReaderFactory.newXmlReader( file ) );
             }
             catch ( IOException e )
             {
@@ -155,7 +155,7 @@ public class DescriptorUtil
         {
             try
             {
-                d = readPluginDescriptor( new FileReader( file ) );
+                d = readPluginDescriptor( ReaderFactory.newXmlReader( file ) );
             }
             catch ( IOException e )
             {
@@ -203,7 +203,7 @@ public class DescriptorUtil
         {
             try
             {
-                d = readProductDescriptor( new FileReader( file ) );
+                d = readProductDescriptor( ReaderFactory.newXmlReader( file ) );
             }
             catch ( IOException e )
             {
