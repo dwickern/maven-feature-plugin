@@ -78,7 +78,7 @@ public class UpdateSiteMojoTest
         mojo.execute();
 
         String siteContent = FileUtils.fileRead( siteFile );
-        assertTrue( siteContent.contains( "features/com.jcraft.jsch_1.1.2.jar" ) );
-        assertTrue( siteContent.contains( "features/org.codehaus.mojo.pde.afeature_1.0.0.20080101.jar" ) );
+        assertTrue( siteContent.indexOf( "features/com.jcraft.jsch_1.1.2.jar" ) >= 0 );
+        assertTrue( siteContent.indexOf( "features/org.codehaus.mojo.pde.afeature_1.0.0.20080101.jar" ) >= 0 );
     }
 }
