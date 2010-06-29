@@ -3,8 +3,8 @@
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <parent>
     <groupId>org.codehaus.mojo</groupId>
-    <artifactId>mojo</artifactId>
-    <version>16</version>
+    <artifactId>mojo-parent</artifactId>
+    <version>24</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>pde-maven-plugin</artifactId>
@@ -16,8 +16,7 @@
   </description>
   <url>http://mojo.codehaus.org/pde-maven-plugin</url>
   <prerequisites>
-    <!-- We need MNG-3396 and MNG-3410 -->
-    <maven>2.0.9-SNAPSHOT</maven>
+    <maven>2.0.9</maven>
   </prerequisites>
   <inceptionYear>2006</inceptionYear>
 
@@ -45,6 +44,9 @@
     </contributor>
   </contributors>
 
+  <properties>
+    <mavenVersion>2.0.9</mavenVersion>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -59,7 +61,7 @@
     <dependency>
       <groupId>org.apache.maven</groupId>
       <artifactId>maven-plugin-api</artifactId>
-      <version>2.0.4</version>
+      <version>${mavenVersion}</version>
     </dependency>
     <dependency>
       <groupId>org.codehaus.plexus</groupId>
@@ -111,17 +113,17 @@
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-artifact-manager</artifactId>
-        <version>2.0.8</version>
+        <version>${mavenVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-project</artifactId>
-        <version>2.0.8</version>
+        <version>${mavenVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.maven</groupId>
         <artifactId>maven-core</artifactId>
-        <version>2.0.8</version>
+        <version>${mavenVersion}</version>
       </dependency>
       <dependency>
         <groupId>org.codehaus.plexus</groupId>
