@@ -36,13 +36,13 @@ Eclipse PDE Maven Plugin
    
 * Examples
 
-  * TODO: {{{examples/gettting_started.html}Getting Started with PDE plugin}}
+  * {{{examples/getting_started.html}Getting Started with PDE plugin}}
   
-  * TODO: {{{examples/simple_plugin.html}Create a simple plugin}}
+  * {{{examples/simple_plugin.html}Create a simple plugin}}
   
-  * TODO: {{{examples/simple_feature.html}Creating a simple feature}}
+  * {{{examples/simple_feature.html}Creating a simple feature}}
   
-  * TODO: {{{examples/simple_product.html}Creating a simple product}}
+  * {{{examples/simple_product.html}Creating a simple product}}
 
   * {{{examples/m2eclipse.html}M2Eclipse}}: Build M2Eclipse's feature distribution from source.
   
