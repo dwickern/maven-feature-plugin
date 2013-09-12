@@ -45,6 +45,9 @@ import org.eclipse.pde.internal.core.ifeature.IFeaturePlugin;
 
 import java.io.*;
 import java.util.*;
+import java.util.jar.Attributes;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 
 /**
  * Generate an Eclipse feature file from the dependency list
@@ -286,7 +289,13 @@ public class FeatureMojo
             /* if it's not a feature we can include it or depend on it */
             if ( !useImports || artifact.getGroupId().equals( getProject().getGroupId() ) )
             {
-                plugins.add( createFeaturePlugin( model, node ) );
+                IFeaturePlugin plugin = createFeaturePlugin(model, node);
+                if (plugin == null) {
+                    getLog().debug( "Ignoring artifact " + artifact );
+                    continue;
+                }
+
+                plugins.add( plugin );
             }
             else
             {
@@ -298,19 +307,59 @@ public class FeatureMojo
         }
     }
 
+    private static String getBundleSymbolicName(Attributes attrs) {
+        String name = attrs.getValue("Bundle-SymbolicName");
+        if (name == null)
+            return null;
+
+        StringTokenizer token = new StringTokenizer(name, ";");
+        return token.nextToken().trim();
+    }
+
+    private static String getBundleVersion(Attributes attrs) {
+        return attrs.getValue("Bundle-Version");
+    }
+
+    private static boolean isFragment(Attributes attrs) {
+        return attrs.getValue("Fragment-Host") != null;
+    }
+
     private IFeaturePlugin createFeaturePlugin( IFeatureModel model, DependencyNode node )
-        throws CoreException, MojoExecutionException
-    {
+            throws CoreException, MojoExecutionException {
         FeaturePlugin featurePlugin = new FeaturePlugin();
-        featurePlugin.setModel( model );
-        featurePlugin.setId( maven2OsgiConverter.getBundleSymbolicName( node.getArtifact() ) );
-        featurePlugin.setVersion( maven2OsgiConverter.getVersion( node.getArtifact() ) );
+        featurePlugin.setModel(model);
         File file = node.getArtifact().getFile();
         if ( file == null )
         {
             /* the file was already resolved, it's just that is not available in the dependency node */
             file = new File( this.localRepository.getBasedir(), this.localRepository.pathOf( node.getArtifact() ) );
         }
+
+        try {
+            JarFile jarFile = new JarFile(file);
+            Manifest manifest = jarFile.getManifest();
+            if (manifest == null) {
+                getLog().warn("Artifact is not an OSGi bundle and will be ignored (no manifest): " + node.getArtifact().getId());
+                return null;
+            }
+
+            Attributes attrs = manifest.getMainAttributes();
+            String bsn = getBundleSymbolicName(attrs);
+            String ver = getBundleVersion(attrs);
+            if (bsn == null || ver == null) {
+                getLog().warn("Artifact is not an OSGi bundle and will be ignored (no BSN/version): " + node.getArtifact().getId());
+                return null;
+            }
+
+            featurePlugin.setId( bsn );
+            featurePlugin.setVersion( ver );
+            featurePlugin.setFragment(isFragment(attrs));
+
+            getLog().info("Adding OSGi bundle to feature: " + node.getArtifact().getId());
+        } catch (Exception e) {
+            getLog().error("Artifact is not an OSGi bundle and will be ignored: " + node.getArtifact().getId(), e);
+        }
+
         long size = file.length() / 1024;
         featurePlugin.setInstallSize( size );
         featurePlugin.setDownloadSize( size );
