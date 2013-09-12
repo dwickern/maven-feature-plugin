@@ -18,17 +18,7 @@
  */
 package org.codehaus.mojo.pde.feature;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Properties;
-
+import org.apache.commons.lang.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.factory.ArtifactFactory;
 import org.apache.maven.artifact.metadata.ArtifactMetadataSource;
@@ -47,15 +37,14 @@ import org.apache.maven.shared.osgi.Maven2OsgiConverter;
 import org.codehaus.mojo.pde.updatesite.UpdateSiteMojo;
 import org.codehaus.plexus.util.WriterFactory;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.pde.internal.core.feature.Feature;
-import org.eclipse.pde.internal.core.feature.FeatureImport;
-import org.eclipse.pde.internal.core.feature.FeatureInfo;
-import org.eclipse.pde.internal.core.feature.FeaturePlugin;
-import org.eclipse.pde.internal.core.feature.WorkspaceFeatureModel;
+import org.eclipse.pde.internal.core.feature.*;
 import org.eclipse.pde.internal.core.ifeature.IFeature;
 import org.eclipse.pde.internal.core.ifeature.IFeatureImport;
 import org.eclipse.pde.internal.core.ifeature.IFeatureModel;
 import org.eclipse.pde.internal.core.ifeature.IFeaturePlugin;
+
+import java.io.*;
+import java.util.*;
 
 /**
  * Generate an Eclipse feature file from the dependency list
@@ -190,6 +179,21 @@ public class FeatureMojo
         writeProperties( properties );
     }
 
+    /**
+     * The feature.xml version calculated based on the maven pom version
+     */
+    private String getVersion() {
+        String osgiVersion = maven2OsgiConverter.getVersion(getProject().getVersion());
+
+        // Replace "SNAPSHOT" with "qualifier" for Tycho
+        String lastPart = StringUtils.substringAfterLast(osgiVersion, ".");
+        if (StringUtils.equals(lastPart, "SNAPSHOT")) {
+            return StringUtils.substringBeforeLast(osgiVersion, ".") + ".qualifier";
+        }
+
+        return osgiVersion;
+    }
+
     private Feature createFeature()
         throws MojoExecutionException, MojoFailureException
     {
@@ -204,7 +208,7 @@ public class FeatureMojo
 
             feature.setId( getProject().getArtifactId() );
             feature.setLabel( '%' + FEATURE_NAME_PROPERTY );
-            feature.setVersion( maven2OsgiConverter.getVersion( getProject().getVersion() ) );
+            feature.setVersion( getVersion() );
             feature.setProviderName( '%' + PROVIDER_NAME_PROPERTY );
 
             FeatureInfo description = new FeatureInfo( IFeature.INFO_DESCRIPTION );
