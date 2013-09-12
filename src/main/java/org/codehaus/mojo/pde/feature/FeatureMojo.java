@@ -34,7 +34,6 @@ import org.apache.maven.shared.dependency.tree.DependencyNode;
 import org.apache.maven.shared.dependency.tree.DependencyTreeBuilder;
 import org.apache.maven.shared.dependency.tree.DependencyTreeBuilderException;
 import org.apache.maven.shared.osgi.Maven2OsgiConverter;
-import org.codehaus.mojo.pde.updatesite.UpdateSiteMojo;
 import org.codehaus.plexus.util.WriterFactory;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.pde.internal.core.feature.*;
@@ -60,6 +59,7 @@ import java.util.jar.Manifest;
 public class FeatureMojo
     extends AbstractMojo
 {
+    public static final String ECLIPSE_FEATURE_TYPE = "eclipse-feature";
 
     public static final String FEATURE_NAME_PROPERTY = "featureName";
 
@@ -279,7 +279,7 @@ public class FeatureMojo
             }
 
             /* do not add children of features, Eclipse will handle that, and features are always imported */
-            if ( UpdateSiteMojo.ECLIPSE_FEATURE_TYPE.equals( artifact.getType() ) )
+            if ( ECLIPSE_FEATURE_TYPE.equals( artifact.getType() ) )
             {
                 imports.add( createFeatureImport( model, node ) );
                 continue;
@@ -373,7 +373,7 @@ public class FeatureMojo
         FeatureImport featureImport = new FeatureImport();
         featureImport.setModel( model );
         featureImport.setId( maven2OsgiConverter.getBundleSymbolicName( node.getArtifact() ) );
-        if ( UpdateSiteMojo.ECLIPSE_FEATURE_TYPE.equals( node.getArtifact().getType() ) )
+        if ( ECLIPSE_FEATURE_TYPE.equals( node.getArtifact().getType() ) )
         {
             featureImport.setType( IFeatureImport.FEATURE );
         }
