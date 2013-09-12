@@ -202,7 +202,7 @@ public class FeatureMojo
             IFeatureModel model = new WorkspaceFeatureModel();
             feature.setModel( model );
 
-            feature.setId( maven2OsgiConverter.getBundleSymbolicName( getProject().getArtifact() ) );
+            feature.setId( getProject().getArtifactId() );
             feature.setLabel( '%' + FEATURE_NAME_PROPERTY );
             feature.setVersion( maven2OsgiConverter.getVersion( getProject().getVersion() ) );
             feature.setProviderName( '%' + PROVIDER_NAME_PROPERTY );
