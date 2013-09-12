@@ -348,7 +348,8 @@ public class FeatureMojo
         PrintWriter writer = null;
         try
         {
-            writer = new PrintWriter( WriterFactory.newXmlWriter( featureFile ) );
+            writer = new PrintWriter(WriterFactory.newXmlWriter(featureFile));
+            writer.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n");
             feature.write( "", writer );
         }
         catch ( IOException e )
