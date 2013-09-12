@@ -2,8 +2,8 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>pde-maven-plugin</artifactId>
+        <groupId>org.s4i</groupId>
+        <artifactId>maven-feature-plugin</artifactId>
         <configuration>
         </configuration>
       </plugin>

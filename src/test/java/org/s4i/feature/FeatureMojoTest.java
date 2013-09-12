@@ -17,7 +17,7 @@
  * under the License.
  */
 
-package org.codehaus.mojo.pde.feature;
+package org.s4i.feature;
 
 import java.io.File;
 import java.util.ArrayList;
