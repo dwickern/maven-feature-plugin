@@ -335,6 +335,12 @@ public class FeatureMojo
             file = new File( this.localRepository.getBasedir(), this.localRepository.pathOf( node.getArtifact() ) );
         }
 
+        String type = node.getArtifact().getType();
+        if (!"jar".equals(type)) {
+            getLog().error("Unsupported type \"" + type + "\" for artifact: " + node.getArtifact().getId());
+            return null;
+        }
+
         try {
             JarFile jarFile = new JarFile(file);
             Manifest manifest = jarFile.getManifest();
@@ -358,6 +364,7 @@ public class FeatureMojo
             getLog().info("Adding OSGi bundle to feature: " + node.getArtifact().getId());
         } catch (Exception e) {
             getLog().error("Artifact is not an OSGi bundle and will be ignored: " + node.getArtifact().getId(), e);
+            return null;
         }
 
         long size = file.length() / 1024;
