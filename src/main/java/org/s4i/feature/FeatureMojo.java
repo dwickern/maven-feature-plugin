@@ -292,10 +292,9 @@ public class FeatureMojo
                 IFeaturePlugin plugin = createFeaturePlugin(model, node);
                 if (plugin == null) {
                     getLog().debug( "Ignoring artifact " + artifact );
-                    continue;
+                } else {
+                    plugins.add( plugin );
                 }
-
-                plugins.add( plugin );
             }
             else
             {
